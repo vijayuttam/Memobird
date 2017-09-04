@@ -15,8 +15,14 @@ import com.intretech.note.mvp.presenters.NotePresenter
 import com.intretech.note.mvp.views.NoteView
 import com.intretech.note.utils.formatDate
 import kotlinx.android.synthetic.main.activity_note.*
+import com.vansuita.pickimage.bean.PickResult
+import com.vansuita.pickimage.listeners.IPickResult
+import com.vansuita.pickimage.bundle.PickSetup
+import com.vansuita.pickimage.dialog.PickImageDialog
 
-class NoteActivity : MvpAppCompatActivity(), NoteView {
+
+
+class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
 
     @InjectPresenter
     lateinit var mPresenter: NotePresenter
@@ -27,7 +33,7 @@ class NoteActivity : MvpAppCompatActivity(), NoteView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note)
 
-        //перемещаем курсор в конец поля ввода
+        // move the cursor to the end of the input field
         etTitle.onFocusChangeListener = View.OnFocusChangeListener() { view, hasFocus ->
             if (hasFocus) {
                 var editText = view as EditText
@@ -89,6 +95,19 @@ class NoteActivity : MvpAppCompatActivity(), NoteView {
         finish()
     }
 
+    override fun showPickImageDialog() {
+        PickImageDialog.build(PickSetup())
+                .show(supportFragmentManager)
+    }
+
+    override fun onPickResult(pickResult: PickResult?) {
+        if (pickResult?.error == null){
+            Toast.makeText(this, "Picked Image", Toast.LENGTH_LONG).show()
+        }else{
+            Toast.makeText(this, pickResult.error.message, Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.note, menu)
         return true
@@ -101,8 +120,11 @@ class NoteActivity : MvpAppCompatActivity(), NoteView {
             R.id.menuDeleteNote -> mPresenter.showNoteDeleteDialog()
 
             R.id.menuNoteInfo -> mPresenter.showNoteInfoDialog()
+
+            R.id.menuPickImage -> mPresenter.showPickImageDialog()
         }
         return super.onOptionsItemSelected(item)
     }
+
 
 }

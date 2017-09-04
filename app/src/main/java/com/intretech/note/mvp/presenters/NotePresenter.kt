@@ -6,7 +6,7 @@ import com.intretech.note.MemobirdApplication
 import com.intretech.note.bus.NoteDeleteAction
 import com.intretech.note.bus.NoteEditAction
 import com.intretech.note.mvp.models.Note
-import com.intretech.note.mvp.models.NoteDao
+import com.intretech.note.mvp.models.NewNote
 import com.intretech.note.mvp.views.NoteView
 import org.greenrobot.eventbus.EventBus
 import java.util.*
@@ -16,7 +16,7 @@ import javax.inject.Inject
 class NotePresenter : MvpPresenter<NoteView>() {
 
     @Inject
-    lateinit var mNoteDao: NoteDao
+    lateinit var mNewNote: NewNote
     lateinit var mNote: Note
     var mNotePosition: Int = -1
 
@@ -26,7 +26,7 @@ class NotePresenter : MvpPresenter<NoteView>() {
 
     fun showNote(noteId: Long, notePosition: Int) {
         mNotePosition = notePosition
-        mNote = mNoteDao.getNoteById(noteId)
+        mNote = mNewNote.getNoteById(noteId)
         viewState.showNote(mNote)
     }
 
@@ -34,13 +34,13 @@ class NotePresenter : MvpPresenter<NoteView>() {
         mNote.title = title
         mNote.text = text
         mNote.changeDate = Date()
-        mNoteDao.saveNote(mNote)
+        mNewNote.saveNote(mNote)
         EventBus.getDefault().post(NoteEditAction(mNotePosition))
         viewState.onNoteSaved()
     }
 
     fun deleteNote() {
-        mNoteDao.deleteNote(mNote)
+        mNewNote.deleteNote(mNote)
         EventBus.getDefault().post(NoteDeleteAction(mNotePosition))
         viewState.onNoteDeleted()
     }
@@ -59,6 +59,10 @@ class NotePresenter : MvpPresenter<NoteView>() {
 
     fun hideNoteInfoDialog() {
         viewState.hideNoteInfoDialog()
+    }
+
+    fun showPickImageDialog(){
+        viewState.showPickImageDialog()
     }
 
 }

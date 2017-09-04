@@ -8,7 +8,7 @@ import com.intretech.note.MemobirdApplication
 import com.intretech.note.bus.NoteDeleteAction
 import com.intretech.note.bus.NoteEditAction
 import com.intretech.note.mvp.models.Note
-import com.intretech.note.mvp.models.NoteDao
+import com.intretech.note.mvp.models.NewNote
 import com.intretech.note.mvp.views.MainView
 import com.intretech.note.ui.activities.NoteActivity
 import com.intretech.note.utils.getNotesSortMethodName
@@ -31,7 +31,7 @@ class MainPresenter : MvpPresenter<MainView>() {
     }
 
     @Inject
-    lateinit var mNoteDao: NoteDao
+    lateinit var mNewNote: NewNote
     lateinit var mNotesList: MutableList<Note>
 
     init {
@@ -48,7 +48,7 @@ class MainPresenter : MvpPresenter<MainView>() {
      * Loads all existing notes and passes them to View
      */
     fun loadAllNotes() {
-        mNotesList = mNoteDao.loadAllNotes()
+        mNotesList = mNewNote.loadAllNotes()
         Collections.sort(mNotesList, getCurrentSortMethod())
         viewState.onNotesLoaded(mNotesList)
     }
@@ -57,7 +57,7 @@ class MainPresenter : MvpPresenter<MainView>() {
      * Removes all existing notes
      */
     fun deleteAllNotes() {
-        mNoteDao.deleteAllNotes()
+        mNewNote.deleteAllNotes()
         mNotesList.removeAll(mNotesList)
         viewState.onAllNotesDeleted()
     }
@@ -67,13 +67,13 @@ class MainPresenter : MvpPresenter<MainView>() {
      */
     fun deleteNoteByPosition(position: Int) {
         val note = mNotesList[position];
-        mNoteDao.deleteNote(note)
+        mNewNote.deleteNote(note)
         mNotesList.remove(note)
         viewState.onNoteDeleted()
     }
 
     fun openNewNote(activity: Activity) {
-        val newNote = mNoteDao.createNote()
+        val newNote = mNewNote.createNote()
         mNotesList.add(newNote)
         sortNotesBy(getCurrentSortMethod())
         openNote(activity, mNotesList.indexOf(newNote))
@@ -121,7 +121,7 @@ class MainPresenter : MvpPresenter<MainView>() {
     @Subscribe
     fun onNoteEdit(action: NoteEditAction) {
         val notePosition = action.position
-        mNotesList[notePosition] = mNoteDao.getNoteById(mNotesList[notePosition].id) //обновляем заметку по позиции
+        mNotesList[notePosition] = mNewNote.getNoteById(mNotesList[notePosition].id) //обновляем заметку по позиции
         sortNotesBy(getCurrentSortMethod())
     }
 

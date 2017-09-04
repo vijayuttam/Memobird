@@ -55,6 +55,8 @@ dependencies {
     provided 'org.glassfish:javax.annotation:10.0-b28'
     //EventBus
     compile 'org.greenrobot:eventbus:3.0.0'
+    //PickImage
+    compile 'com.github.jrvansuita:PickImage:+'
 }
 
 kapt {
