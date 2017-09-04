@@ -19,4 +19,6 @@ interface NoteView : MvpView {
 
     fun hideNoteDeleteDialog()
 
+    fun showPickImageDialog()
+
 }

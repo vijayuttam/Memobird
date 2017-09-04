@@ -6,7 +6,7 @@ import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = arrayOf(NoteDaoModule::class))
+@Component(modules = arrayOf(NoteModule::class))
 interface AppComponent {
     fun inject(mainPresenter: MainPresenter)
 

@@ -17,4 +17,8 @@
         android:title="@string/note_info"
         app:showAsAction="never"
         />
+    <item android:id="@+id/menuPickImage"
+        android:title="Pic Image"
+        app:showAsAction="never"
+        />
 </menu>

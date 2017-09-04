@@ -1,15 +1,15 @@
 package com.intretech.note.di
 
-import com.intretech.note.mvp.models.NoteDao
+import com.intretech.note.mvp.models.NewNote
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-class NoteDaoModule {
+class NoteModule {
 
     @Provides
     @Singleton
-    fun provideNoteDao(): NoteDao = NoteDao()
+    fun provideNote(): NewNote = NewNote()
 
 }
