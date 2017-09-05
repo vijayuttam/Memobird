@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.MvpAppCompatActivity
@@ -14,12 +15,10 @@ import com.intretech.note.mvp.models.Note
 import com.intretech.note.mvp.presenters.NotePresenter
 import com.intretech.note.mvp.views.NoteView
 import com.intretech.note.utils.formatDate
-import kotlinx.android.synthetic.main.activity_note.*
 import com.vansuita.pickimage.bean.PickResult
 import com.vansuita.pickimage.listeners.IPickResult
 import com.vansuita.pickimage.bundle.PickSetup
 import com.vansuita.pickimage.dialog.PickImageDialog
-
 
 
 class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
@@ -28,13 +27,20 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
     lateinit var mPresenter: NotePresenter
     private var mNoteDeleteDialog: MaterialDialog? = null
     private var mNoteInfoDialog: MaterialDialog? = null
+    private var etTitle: EditText? = null
+    private var tvNoteDate: TextView? = null
+    private var etText: EditText? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note)
 
+        etTitle = findViewById(R.id.etTitle)
+        tvNoteDate = findViewById(R.id.tvNoteDate)
+        etText = findViewById(R.id.etText)
+
         // move the cursor to the end of the input field
-        etTitle.onFocusChangeListener = View.OnFocusChangeListener() { view, hasFocus ->
+        etTitle!!.onFocusChangeListener = View.OnFocusChangeListener() { view, hasFocus ->
             if (hasFocus) {
                 var editText = view as EditText
                 editText.setSelection((editText.text.length))
@@ -47,9 +53,9 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
     }
 
     override fun showNote(note: Note) {
-        tvNoteDate.text = formatDate(note.changeDate)
-        etTitle.setText(note.title)
-        etText.setText(note.text)
+        tvNoteDate!!.text = formatDate(note.changeDate)
+        etTitle!!.setText(note.title)
+        etText!!.setText(note.text)
     }
 
     override fun showNoteInfoDialog(noteInfo: String) {
@@ -115,7 +121,7 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menuSaveNote -> mPresenter.saveNote(etTitle.text.toString(), etText.text.toString())
+            R.id.menuSaveNote -> mPresenter.saveNote(etTitle!!.text.toString(), etText!!.text.toString())
 
             R.id.menuDeleteNote -> mPresenter.showNoteDeleteDialog()
 

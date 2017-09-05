@@ -1,10 +1,12 @@
 package com.intretech.note.ui.activities
 
 import android.os.Bundle
+import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.SearchView
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.MvpAppCompatActivity
@@ -16,7 +18,7 @@ import com.intretech.note.mvp.views.MainView
 import com.intretech.note.ui.commons.ItemClickSupport
 import com.pawegio.kandroid.onQueryChange
 import com.intretech.note.ui.adapters.NotesAdapter
-import kotlinx.android.synthetic.main.activity_main.*
+import com.melnykov.fab.FloatingActionButton
 
 class MainActivity : MvpAppCompatActivity(), MainView {
 
@@ -26,33 +28,40 @@ class MainActivity : MvpAppCompatActivity(), MainView {
     private var mNoteDeleteDialog: MaterialDialog? = null
     private var mNoteInfoDialog: MaterialDialog? = null
 
+    private var rvNotesList: RecyclerView? = null
+    private var fabButton: FloatingActionButton? = null
+    private var tvNotesIsEmpty: TextView? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        rvNotesList = findViewById(R.id.rvNotesList)
+        fabButton = findViewById(R.id.fabButton)
+        tvNotesIsEmpty = findViewById(R.id.tvNotesIsEmpty)
 
-        with(ItemClickSupport.addTo(rvNotesList)) {
+        with(ItemClickSupport.addTo(rvNotesList!!)) {
             setOnItemClickListener { recyclerView, position, v -> mPresenter.openNote(this@MainActivity, position) }
             setOnItemLongClickListener { recyclerView, position, v -> mPresenter.showNoteContextDialog(position); true }
         }
 
-        fabButton.attachToRecyclerView(rvNotesList)
-        fabButton.setOnClickListener { mPresenter.openNewNote(this) }
+        fabButton!!.attachToRecyclerView(rvNotesList!!)
+        fabButton!!.setOnClickListener { mPresenter.openNewNote(this) }
     }
 
     override fun onNotesLoaded(notes: List<Note>) {
-        rvNotesList.adapter = NotesAdapter(notes)
+        rvNotesList!!.adapter = NotesAdapter(notes)
         updateView()
     }
 
     override fun updateView() {
-        rvNotesList.adapter.notifyDataSetChanged()
-        if (rvNotesList.adapter.itemCount == 0) {
-            rvNotesList.visibility = View.GONE
-            tvNotesIsEmpty.visibility = View.VISIBLE
+        rvNotesList!!.adapter.notifyDataSetChanged()
+        if (rvNotesList!!.adapter.itemCount == 0) {
+            rvNotesList!!.visibility = View.GONE
+            tvNotesIsEmpty!!.visibility = View.VISIBLE
         } else {
-            rvNotesList.visibility = View.VISIBLE
-            tvNotesIsEmpty.visibility = View.GONE
+            rvNotesList!!.visibility = View.VISIBLE
+            tvNotesIsEmpty!!.visibility = View.GONE
         }
     }
 
@@ -67,7 +76,7 @@ class MainActivity : MvpAppCompatActivity(), MainView {
     }
 
     override fun onSearchResult(notes: List<Note>) {
-        rvNotesList.adapter = NotesAdapter(notes)
+        rvNotesList!!.adapter = NotesAdapter(notes)
     }
 
     override fun showNoteContextDialog(notePosition: Int) {
