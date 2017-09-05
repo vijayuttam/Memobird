@@ -4,7 +4,7 @@
     <string name="all_notes_is_deleted">All notes deleted</string>
     <string name="delete">Remove</string>
     <string name="save">Save</string>
-    <string name="delete_all">delete everything</string>
+    <string name="delete_all">Delete All</string>
     <string name="note_info">Information</string>
     <string name="sort_by">Sort by</string>
     <string name="sort_by_title">Headline</string>
