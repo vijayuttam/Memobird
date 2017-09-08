@@ -29,15 +29,14 @@
         android:paddingBottom="10dp"
         />
 
-    <EditText
-        android:id="@+id/etText"
+    <com.czm.xcricheditor.XCRichEditor
+        android:id="@+id/richEditor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:textColor="#000000"
         android:gravity="start"
-        android:hint="Text"
         android:background="@null"
-        android:paddingLeft="10dp"
-        />
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"> </com.czm.xcricheditor.XCRichEditor>
 
 </LinearLayout>

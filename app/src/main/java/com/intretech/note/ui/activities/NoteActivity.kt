@@ -1,5 +1,6 @@
 package com.intretech.note.ui.activities
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -10,6 +11,9 @@ import android.widget.Toast
 import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.MvpAppCompatActivity
 import com.arellomobile.mvp.presenter.InjectPresenter
+import com.czm.xcricheditor.EditItem
+import com.czm.xcricheditor.XCRichEditor
+import com.facebook.drawee.backends.pipeline.Fresco
 import com.intretech.note.R
 import com.intretech.note.mvp.models.Note
 import com.intretech.note.mvp.presenters.NotePresenter
@@ -29,15 +33,15 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
     private var mNoteInfoDialog: MaterialDialog? = null
     private var etTitle: EditText? = null
     private var tvNoteDate: TextView? = null
-    private var etText: EditText? = null
+    private var etText: XCRichEditor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note)
-
+        Fresco.initialize(this)
         etTitle = findViewById(R.id.etTitle)
         tvNoteDate = findViewById(R.id.tvNoteDate)
-        etText = findViewById(R.id.etText)
+        etText = findViewById(R.id.richEditor)
 
         // move the cursor to the end of the input field
         etTitle!!.onFocusChangeListener = View.OnFocusChangeListener() { view, hasFocus ->
@@ -55,7 +59,7 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
     override fun showNote(note: Note) {
         tvNoteDate!!.text = formatDate(note.changeDate)
         etTitle!!.setText(note.title)
-        etText!!.setText(note.text)
+        etText?.richText = note.text
     }
 
     override fun showNoteInfoDialog(noteInfo: String) {
@@ -108,6 +112,11 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
 
     override fun onPickResult(pickResult: PickResult?) {
         if (pickResult?.error == null){
+            var editItem: EditItem? = null
+            editItem?.type = 1
+            editItem?.content = pickResult!!.path
+            editItem?.uri = Uri.parse("file://" + pickResult.uri)
+            etText?.addImage(editItem)
             Toast.makeText(this, "Picked Image", Toast.LENGTH_LONG).show()
         }else{
             Toast.makeText(this, pickResult.error.message, Toast.LENGTH_LONG).show()
@@ -121,7 +130,7 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menuSaveNote -> mPresenter.saveNote(etTitle!!.text.toString(), etText!!.text.toString())
+            R.id.menuSaveNote -> mPresenter.saveNote(etTitle!!.text.toString(), etText!!.richText)
 
             R.id.menuDeleteNote -> mPresenter.showNoteDeleteDialog()
 
