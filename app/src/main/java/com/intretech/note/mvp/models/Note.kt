@@ -4,6 +4,7 @@ import com.activeandroid.Model
 import com.activeandroid.annotation.Column
 import com.activeandroid.annotation.Table
 import com.intretech.note.utils.formatDate
+import java.sql.Blob
 import java.util.*
 
 @Table(name = "Notes")
