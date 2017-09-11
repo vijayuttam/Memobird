@@ -23,6 +23,7 @@ import com.vansuita.pickimage.bean.PickResult
 import com.vansuita.pickimage.listeners.IPickResult
 import com.vansuita.pickimage.bundle.PickSetup
 import com.vansuita.pickimage.dialog.PickImageDialog
+import java.io.File
 
 
 class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
@@ -59,7 +60,7 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
     override fun showNote(note: Note) {
         tvNoteDate!!.text = formatDate(note.changeDate)
         etTitle!!.setText(note.title)
-        etText?.richText = note.text
+        etText!!.richText = note.text
     }
 
     override fun showNoteInfoDialog(noteInfo: String) {
@@ -112,11 +113,8 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
 
     override fun onPickResult(pickResult: PickResult?) {
         if (pickResult?.error == null){
-            var editItem: EditItem? = null
-            editItem?.type = 1
-            editItem?.content = pickResult!!.path
-            editItem?.uri = Uri.parse("file://" + pickResult.uri)
-            etText?.addImage(editItem)
+            var editItem: EditItem? = EditItem(1, pickResult!!.path, Uri.fromFile(File(pickResult!!.path)))
+            etText!!.addImage(editItem)
             Toast.makeText(this, "Picked Image", Toast.LENGTH_LONG).show()
         }else{
             Toast.makeText(this, pickResult.error.message, Toast.LENGTH_LONG).show()
