@@ -14,6 +14,7 @@ import android.widget.RelativeLayout;
 
 import com.czm.xcricheditor.util.PhoneUtil;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -74,9 +75,9 @@ public class XCRichEditor extends RelativeLayout{
                     mDatas.remove(position + 1);
                     mDatas.remove(position);
                     mDatas.remove(position - 1);
-                    EditItem textData = new EditItem();
-                    textData.setType(0);
-                    textData.setContent(str);
+                    EditItem textData = new EditItem(0, str, null);
+                    //textData.setType(0);
+                    //textData.setContent(str);
                     mDatas.add(position - 1, textData);
                     mAdapter.notifyDataSetChanged();
                 }
@@ -88,9 +89,9 @@ public class XCRichEditor extends RelativeLayout{
         if (null == mDatas) {
             mDatas = new ArrayList<>();
         }
-        EditItem data = new EditItem();
-        data.setType(0);
-        data.setContent("");
+        EditItem data = new EditItem(0, "", null);
+        //data.setType(0);
+        //data.setContent("");
         mDatas.add(data);
         mAdapter.setData(mDatas);
     }
@@ -101,14 +102,14 @@ public class XCRichEditor extends RelativeLayout{
                 if (item.getType() == 0) {
                     content += item.getContent();
                 } else if (item.getType() == 1) {
-                    String pathTag = item.getContent();
+                    String pathTag = "<img src=\"" + item.getContent() + "\"/>";
                     content += pathTag;
                 }
             }
         }
         return content;
-
     }
+
     public void addImage(List<EditItem> info) {
         addData(info);
     }
@@ -122,34 +123,34 @@ public class XCRichEditor extends RelativeLayout{
         if (mDatas != null && mDatas.size() > 0) {
             mDatas.clear();
         }
-        /*
+        if (content == null)
+            content = "";
+
         Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(content);
         while (matcher.find()) {
             String url = matcher.group();
             StringBuffer sb = new StringBuffer();
             matcher.appendReplacement(sb, "");
-            EditItem item = new EditItem();
+            EditItem item = new EditItem(0, sb.toString().trim(), null);
             item.setType(0);
             item.setContent(sb.toString().trim());
             mDatas.add(item);
             if (url.contains("<img")) {
-                final String path = url.substring(12, url.length() - 3);
-                EditItem imgItem = new EditItem();
-                imgItem.setType(1);
-                imgItem.setUri(Uri.parse("file://" + path));
-                imgItem.setContent(path);
+                final String path = url.substring(10, url.length() - 3);
+                EditItem imgItem = new EditItem(1, path, Uri.fromFile(new File(path)));
+                //imgItem.setType(1);
+                //imgItem.setUri(Uri.parse("file://" + path));
+                //imgItem.setContent(path);
                 mDatas.add(imgItem);
             }
-
+            return;
         }
-        */
-
         StringBuffer sb = new StringBuffer(content);
         //matcher.appendTail(sb);
-        EditItem textItem = new EditItem();
-        textItem.setType(0);
-        textItem.setContent(sb.toString().trim());
+        EditItem textItem = new EditItem(0, sb.toString().trim(), null);
+        //textItem.setType(0);
+        //textItem.setContent(sb.toString().trim());
         mDatas.add(textItem);
         mAdapter.setData(mDatas);
     }
@@ -185,31 +186,31 @@ public class XCRichEditor extends RelativeLayout{
             } else {
                 mDatas.remove(lastPosition);
             }
-            EditItem preData = new EditItem();
-            preData.setType(0);
-            preData.setContent(editStr1);
+            EditItem preData = new EditItem(0, editStr1, null);
+            //preData.setType(0);
+            //preData.setContent(editStr1);
             mDatas.add(tmpPosition++, preData);
             for (int i = 0; i < info.size(); i++) {
-                mDatas.add(tmpPosition++, info.get(i));
+                //mDatas.add(tmpPosition++, info.get(i));
                 if (i == info.size() - 1 && !TextUtils.isEmpty(editStr2)) {
-                    EditItem postData = new EditItem();
-                    postData.setType(0);
-                    postData.setContent(editStr2);
+                    EditItem postData = new EditItem(0, editStr2, null);
+                    //postData.setType(0);
+                    //postData.setContent(editStr2);
                     mDatas.add(tmpPosition++, postData);
                 } else {
-                    EditItem postData = new EditItem();
-                    postData.setType(0);
-                    postData.setContent("");
+                    EditItem postData = new EditItem(0, "", null);
+                    //postData.setType(0);
+                    //postData.setContent("");
                     mDatas.add(tmpPosition++, postData);
                 }
             }
         } else {
             for (int i = 0; i < info.size(); i++) {
                 mDatas.add(info.get(i));
-                EditItem textData = new EditItem();
-                textData.setType(0);
-                textData.setContent("");
-                mDatas.add(textData);
+                //EditItem textData = new EditItem(0, "", null);
+                //textData.setType(0);
+                //textData.setContent("");
+                //mDatas.add(textData);
             }
         }
         mAdapter.setData(mDatas);
