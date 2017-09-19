@@ -5,13 +5,15 @@ import android.net.Uri;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
-
+import com.czm.xcricheditor.helper.OnStartDragListener;
+import com.czm.xcricheditor.helper.SimpleItemTouchHelperCallback;
 import com.czm.xcricheditor.util.PhoneUtil;
 
 import java.io.File;
@@ -20,7 +22,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class XCRichEditor extends RelativeLayout{
+public class XCRichEditor extends RelativeLayout implements OnStartDragListener{
     public static final String PATTERN = "(<img src=\"[^\"]*\"\\s*/>)";
     private View mRoot;
     private Context mContext;
@@ -28,7 +30,7 @@ public class XCRichEditor extends RelativeLayout{
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mFullyLinearLayoutManager;
     private XCRichEditorAdapter mAdapter;
-
+    private ItemTouchHelper mItemTouchHelper;
     private int lastPosition = -1;
     private EditText lastEditText;
 
@@ -46,11 +48,15 @@ public class XCRichEditor extends RelativeLayout{
     private void initView(Context context, AttributeSet attrs, int defStyleAttr) {
         mContext = context;
         mRoot = View.inflate(mContext, R.layout.layout_rich_editor, this);
-        mRecyclerView = (RecyclerView) mRoot.findViewById(R.id.id_edit_component);
+        mRecyclerView = mRoot.findViewById(R.id.id_edit_component);
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(PhoneUtil.dip2px(mContext,10)));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mFullyLinearLayoutManager = new LinearLayoutManager(mContext);
-        mAdapter = new XCRichEditorAdapter(mContext);
+        mAdapter = new XCRichEditorAdapter(mContext, this);
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
+        mItemTouchHelper = new ItemTouchHelper(callback);
+        mItemTouchHelper.attachToRecyclerView(mRecyclerView);
+
         mAdapter.setComponentAdapterListener(new XCRichEditorAdapter.ComponentAdapterListener() {
             @Override
             public void change(int position, EditText editText) {
@@ -191,7 +197,7 @@ public class XCRichEditor extends RelativeLayout{
             //preData.setContent(editStr1);
             mDatas.add(tmpPosition++, preData);
             for (int i = 0; i < info.size(); i++) {
-                //mDatas.add(tmpPosition++, info.get(i));
+                mDatas.add(tmpPosition++, info.get(i));
                 if (i == info.size() - 1 && !TextUtils.isEmpty(editStr2)) {
                     EditItem postData = new EditItem(0, editStr2, null);
                     //postData.setType(0);
@@ -207,7 +213,7 @@ public class XCRichEditor extends RelativeLayout{
         } else {
             for (int i = 0; i < info.size(); i++) {
                 mDatas.add(info.get(i));
-                //EditItem textData = new EditItem(0, "", null);
+                EditItem textData = new EditItem(0, "", null);
                 //textData.setType(0);
                 //textData.setContent("");
                 //mDatas.add(textData);
@@ -217,5 +223,9 @@ public class XCRichEditor extends RelativeLayout{
 
         Log.e("XCRichEditor","rich text="+getRichText());
 
+    }
+
+    @Override public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
+        mItemTouchHelper.startDrag(viewHolder);
     }
 }

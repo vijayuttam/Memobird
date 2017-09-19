@@ -1,6 +1,7 @@
 package com.czm.xcricheditor;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -12,26 +13,35 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.czm.xcricheditor.helper.ItemTouchHelperAdapter;
+import com.czm.xcricheditor.helper.ItemTouchHelperViewHolder;
+import com.czm.xcricheditor.helper.OnStartDragListener;
 import com.czm.xcricheditor.util.ImageDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
+import java.util.Collections;
 import java.util.List;
 
-public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+import static android.view.View.*;
+
+public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements
+    ItemTouchHelperAdapter {
     private final LayoutInflater mLayoutInflater;
     // data set
     private List<EditItem> mData;
     private Context mContext;
     private ComponentAdapterListener mListener;
-    private int mImageWidth;
+    private int mImageheight;
+    private final OnStartDragListener mDragStartListener;
 
-    public XCRichEditorAdapter(Context context) {
+    public XCRichEditorAdapter(Context context, OnStartDragListener dragStartListener) {
         super();
         mContext = context;
         mLayoutInflater = LayoutInflater.from(mContext);
-        mImageWidth = 1000;
+        mImageheight = 1000;
+        mDragStartListener = dragStartListener;
     }
 
     public List<EditItem> getData() {
@@ -57,12 +67,18 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
 
         if (holder instanceof TextViewHolder) {
             ((TextViewHolder) holder).bindData(mData.get(position).getContent());
         } else if (holder instanceof ImageViewHolder) {
             ((ImageViewHolder) holder).bindData(mData.get(position).getUri());
+            ((ImageViewHolder) holder).img.setOnLongClickListener(new OnLongClickListener() {
+                @Override public boolean onLongClick(View view) {
+                    mDragStartListener.onStartDrag(holder);
+                    return true;
+                }
+            });
         }
     }
 
@@ -71,6 +87,8 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         switch (mData.get(position).getType()) {
             case 1:
                 return ITEM_TYPE.ITEM_TYPE_IMAGE.ordinal();
+            case 2 :
+                return ITEM_TYPE.ITEM_TYPE_VIDEO.ordinal();
             default:
                 return ITEM_TYPE.ITEM_TYPE_TEXT.ordinal();
         }
@@ -87,6 +105,27 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public void setComponentAdapterListener(ComponentAdapterListener listener) {
         mListener = listener;
+    }
+
+    @Override public boolean onItemMove(int fromPosition, int toPosition) {
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(mData, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(mData, i, i - 1);
+            }
+        }
+        notifyDataSetChanged();
+        notifyItemMoved(fromPosition, toPosition);
+        return true;
+    }
+
+    @Override public void onItemDismiss(int position) {
+        mData.remove(position);
+        notifyDataSetChanged();
+        notifyItemRemoved(position);
     }
 
     public enum ITEM_TYPE {
@@ -107,8 +146,8 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         public TextViewHolder(View itemView) {
             super(itemView);
-            text = (EditText) itemView.findViewById(R.id.id_item_text_component);
-            text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            text = itemView.findViewById(R.id.id_item_text_component);
+            text.setOnFocusChangeListener(new OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
                     if (hasFocus) {
@@ -147,15 +186,15 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
 
-    public class ImageViewHolder extends RecyclerView.ViewHolder {
+    public class ImageViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
         ImageDraweeView img;
         Button deleteBtn;
 
         public ImageViewHolder(View itemView) {
             super(itemView);
-            img = (ImageDraweeView) itemView.findViewById(R.id.id_item_image_component);
-            deleteBtn = (Button) itemView.findViewById(R.id.delete_btn);
-            deleteBtn.setOnClickListener(new View.OnClickListener() {
+            img = itemView.findViewById(R.id.id_item_image_component);
+            deleteBtn = itemView.findViewById(R.id.delete_btn);
+            deleteBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mListener != null) {
@@ -174,7 +213,17 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             img.setUri(imageRequest);
             Log.e("XCRichEditorAdapter","ImageViewHolder bindData uri="+uri.toString());
 
+            mImageheight = img.getMeasuredHeight();
+        }
 
+        @Override public void onItemSelected() {
+            img.getLayoutParams().height = 200;
+            img.setBackgroundColor(Color.LTGRAY);
+        }
+
+        @Override public void onItemClear() {
+            img.getLayoutParams().height = mImageheight;
+            img.setBackgroundColor(0);
         }
     }
 
