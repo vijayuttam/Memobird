@@ -18,7 +18,7 @@ data class EditItem(var type: Int, var content: String?, var uri: Uri?) : Parcel
     }
 
     constructor(source: Parcel) :
-            this(source.readInt(), source.readString(), source.readParcelable(Uri::class.java!!.getClassLoader()))
+            this(source.readInt(), source.readString(), source.readParcelable(Uri::class.java?.getClassLoader()))
 
     companion object {
 
