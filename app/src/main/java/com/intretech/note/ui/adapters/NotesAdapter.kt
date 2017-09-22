@@ -52,8 +52,8 @@ class NotesAdapter : RecyclerView.Adapter<NotesAdapter.ViewHolder> {
         var mNoteDate: TextView
 
         constructor(itemView: View) : super(itemView) {
-            mNoteTitle = itemView.findViewById(R.id.tvItemNoteTitle)
-            mNoteDate = itemView.findViewById(R.id.tvItemNoteDate)
+            mNoteTitle = itemView.findViewById(R.id.tvItemNoteTitle) as TextView
+            mNoteDate = itemView.findViewById(R.id.tvItemNoteDate) as TextView
         }
 
     }

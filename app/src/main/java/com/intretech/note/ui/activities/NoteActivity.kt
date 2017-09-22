@@ -14,15 +14,15 @@ import com.arellomobile.mvp.presenter.InjectPresenter
 import com.czm.xcricheditor.EditItem
 import com.czm.xcricheditor.XCRichEditor
 import com.facebook.drawee.backends.pipeline.Fresco
+import com.intretech.library.bean.PickResult
+import com.intretech.library.bundle.PickSetup
+import com.intretech.library.dialog.PickImageDialog
+import com.intretech.library.listeners.IPickResult
 import com.intretech.note.R
 import com.intretech.note.mvp.models.Note
 import com.intretech.note.mvp.presenters.NotePresenter
 import com.intretech.note.mvp.views.NoteView
 import com.intretech.note.utils.formatDate
-import com.vansuita.pickimage.bean.PickResult
-import com.vansuita.pickimage.listeners.IPickResult
-import com.vansuita.pickimage.bundle.PickSetup
-import com.vansuita.pickimage.dialog.PickImageDialog
 import java.io.File
 
 
@@ -40,9 +40,9 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_note)
         Fresco.initialize(this)
-        etTitle = findViewById(R.id.etTitle)
-        tvNoteDate = findViewById(R.id.tvNoteDate)
-        etText = findViewById(R.id.richEditor)
+        etTitle = findViewById(R.id.etTitle) as EditText?
+        tvNoteDate = findViewById(R.id.tvNoteDate) as TextView?
+        etText = findViewById(R.id.richEditor) as XCRichEditor?
 
         // move the cursor to the end of the input field
         etTitle!!.onFocusChangeListener = View.OnFocusChangeListener() { view, hasFocus ->

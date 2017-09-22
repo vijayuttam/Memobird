@@ -15,7 +15,6 @@ import android.widget.RelativeLayout;
 import com.czm.xcricheditor.helper.OnStartDragListener;
 import com.czm.xcricheditor.helper.SimpleItemTouchHelperCallback;
 import com.czm.xcricheditor.util.PhoneUtil;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +47,7 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener{
     private void initView(Context context, AttributeSet attrs, int defStyleAttr) {
         mContext = context;
         mRoot = View.inflate(mContext, R.layout.layout_rich_editor, this);
-        mRecyclerView = mRoot.findViewById(R.id.id_edit_component);
+        mRecyclerView = (RecyclerView) mRoot.findViewById(R.id.id_edit_component);
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(PhoneUtil.dip2px(mContext,10)));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mFullyLinearLayoutManager = new LinearLayoutManager(mContext);

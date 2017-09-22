@@ -146,7 +146,7 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         public TextViewHolder(View itemView) {
             super(itemView);
-            text = itemView.findViewById(R.id.id_item_text_component);
+            text = (EditText) itemView.findViewById(R.id.id_item_text_component);
             text.setOnFocusChangeListener(new OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
@@ -192,8 +192,8 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         public ImageViewHolder(View itemView) {
             super(itemView);
-            img = itemView.findViewById(R.id.id_item_image_component);
-            deleteBtn = itemView.findViewById(R.id.delete_btn);
+            img = (ImageDraweeView) itemView.findViewById(R.id.id_item_image_component);
+            deleteBtn = (Button) itemView.findViewById(R.id.delete_btn);
             deleteBtn.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {

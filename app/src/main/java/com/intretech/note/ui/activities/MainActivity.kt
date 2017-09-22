@@ -36,9 +36,9 @@ class MainActivity : MvpAppCompatActivity(), MainView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        rvNotesList = findViewById(R.id.rvNotesList)
-        fabButton = findViewById(R.id.fabButton)
-        tvNotesIsEmpty = findViewById(R.id.tvNotesIsEmpty)
+        rvNotesList = findViewById(R.id.rvNotesList) as RecyclerView?
+        fabButton = findViewById(R.id.fabButton) as FloatingActionButton?
+        tvNotesIsEmpty = findViewById(R.id.tvNotesIsEmpty) as TextView?
 
         with(ItemClickSupport.addTo(rvNotesList!!)) {
             setOnItemClickListener { recyclerView, position, v -> mPresenter.openNote(this@MainActivity, position) }
