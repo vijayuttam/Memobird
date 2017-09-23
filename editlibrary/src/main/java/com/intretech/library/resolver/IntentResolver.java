@@ -73,7 +73,7 @@ public class IntentResolver {
     public void launchCamera(Fragment listener) {
         if (getCameraIntent().resolveActivity(activity.getPackageManager()) != null) {
 
-            cameraFile().delete();
+            //cameraFile().delete();
 
             listener.startActivityForResult(loadSystemPackages(getCameraIntent()), REQUESTER);
         }
@@ -92,9 +92,9 @@ public class IntentResolver {
 
     private File cameraFile() {
         if (saveFile == null) {
-            File directory = new File(activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES), getActivity().getClass().getSimpleName());
+            //File directory = new File(activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES), getActivity().getClass().getSimpleName());
 
-            //File directory = new File(activity.getFilesDir(), "picked");
+            File directory = new File(activity.getFilesDir(), "picked");
             directory.mkdirs();
 
             saveFile = new File(directory, activity.getString(R.string.image_file_name));

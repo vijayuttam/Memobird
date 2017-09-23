@@ -100,11 +100,7 @@ public class PickImageDialog extends PickImageBaseDialog {
 
             if (granted) {
                 if (!launchSystemDialog()) {
-                    if (grantResults.length == 1) {
-                        launchGallery();
-                    } else {
-                        launchCamera();
-                    }
+                    launchCamera();
                 }
             } else {
                 dismissAllowingStateLoss();
