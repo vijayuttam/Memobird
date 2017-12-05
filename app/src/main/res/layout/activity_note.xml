@@ -29,7 +29,7 @@
         android:paddingBottom="10dp"
         />
 
-    <com.czm.xcricheditor.XCRichEditor
+    <com.czm.xcricheditor.editor.XCRichEditor
         android:id="@+id/richEditor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -37,6 +37,6 @@
         android:gravity="start"
         android:background="@null"
         android:paddingTop="10dp"
-        android:paddingBottom="10dp"> </com.czm.xcricheditor.XCRichEditor>
+        android:paddingBottom="10dp"> </com.czm.xcricheditor.editor.XCRichEditor>
 
 </LinearLayout>

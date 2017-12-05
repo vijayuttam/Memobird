@@ -1,26 +1,30 @@
-package com.czm.xcricheditor;
+package com.czm.xcricheditor.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-
-import com.czm.xcricheditor.helper.ItemTouchHelperAdapter;
+import com.czm.xcricheditor.editor.EditItem;
+import com.czm.xcricheditor.R;
+import com.czm.xcricheditor.editor.NoteEditText;
 import com.czm.xcricheditor.helper.ItemTouchHelperViewHolder;
 import com.czm.xcricheditor.helper.OnStartDragListener;
-import com.czm.xcricheditor.util.ImageDraweeView;
+import com.czm.xcricheditor.listener.ComponentAdapterListener;
+import com.czm.xcricheditor.listener.OnTextViewChangeListener;
+import com.czm.xcricheditor.view.ImageDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +33,6 @@ import static android.view.View.*;
 public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements
     ItemTouchHelperAdapter {
     private final LayoutInflater mLayoutInflater;
-    // data set
     private List<EditItem> mData;
     private Context mContext;
     private ComponentAdapterListener mListener;
@@ -134,28 +137,16 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         ITEM_TYPE_VIDEO
     }
 
-    public interface ComponentAdapterListener {
-        void change(int position, EditText editText);
 
-        void delete(int position);
-    }
+    public class TextViewHolder extends RecyclerView.ViewHolder implements OnTextViewChangeListener {
 
-    public class TextViewHolder extends RecyclerView.ViewHolder {
-
-        private EditText text;
+        private NoteEditText text;
 
         public TextViewHolder(View itemView) {
             super(itemView);
-            text = (EditText) itemView.findViewById(R.id.id_item_text_component);
-            text.setOnFocusChangeListener(new OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus) {
-                        mListener.change(getAdapterPosition(), text);
-                    }
-                }
-            });
-
+            text = (NoteEditText) itemView.findViewById(R.id.id_item_text_component);
+            text.setOnTextViewChangeListener(this);
+            text.setIndex(getAdapterPosition());
             text.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -184,6 +175,21 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 text.setHint("");
             }
         }
+
+        @Override public void onEditTextDelete(int index, String text) {
+            mListener.delete(getAdapterPosition());
+        }
+
+        @Override public void onEditTextEnter(int index, String input) {
+            mData.get(index).setContent(input);
+        }
+
+        @Override public void onTextChange(int index, boolean hasText) {
+            if (hasText) {
+                mListener.change(getAdapterPosition(), text);
+            }
+
+        }
     }
 
     public class ImageViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
@@ -209,9 +215,8 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     .setResizeOptions(new ResizeOptions(210, 210))
                     .setAutoRotateEnabled(true)
                     .build();
-//            img.setUri(imageRequest);
+            //img.setUri(imageRequest);
             img.setUri(imageRequest);
-            Log.e("XCRichEditorAdapter","ImageViewHolder bindData uri="+uri.toString());
 
             mImageheight = img.getMeasuredHeight();
         }

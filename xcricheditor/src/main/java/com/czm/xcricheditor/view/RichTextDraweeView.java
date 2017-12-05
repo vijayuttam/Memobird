@@ -1,9 +1,10 @@
-package com.czm.xcricheditor.util;
+package com.czm.xcricheditor.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 
+import com.czm.xcricheditor.view.ImageDraweeView;
 import com.facebook.drawee.generic.GenericDraweeHierarchy;
 import com.facebook.imagepipeline.image.ImageInfo;
 

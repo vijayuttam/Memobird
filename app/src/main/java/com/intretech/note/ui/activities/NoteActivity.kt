@@ -11,8 +11,8 @@ import android.widget.Toast
 import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.MvpAppCompatActivity
 import com.arellomobile.mvp.presenter.InjectPresenter
-import com.czm.xcricheditor.EditItem
-import com.czm.xcricheditor.XCRichEditor
+import com.czm.xcricheditor.editor.EditItem
+import com.czm.xcricheditor.editor.XCRichEditor
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.intretech.library.bean.PickResult
 import com.intretech.library.bundle.PickSetup
@@ -113,7 +113,8 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
 
     override fun onPickResult(pickResult: PickResult?) {
         if (pickResult?.error == null){
-            var editItem: EditItem? = EditItem(1, pickResult!!.path, Uri.fromFile(File(pickResult!!.path)))
+            var editItem: EditItem? = EditItem(
+                    1, pickResult!!.path, Uri.fromFile(File(pickResult!!.path)))
             etText!!.addImage(editItem)
             Toast.makeText(this, "Picked Image", Toast.LENGTH_LONG).show()
         }else{

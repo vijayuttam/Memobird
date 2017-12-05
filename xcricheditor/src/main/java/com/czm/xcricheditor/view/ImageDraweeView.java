@@ -1,4 +1,4 @@
-package com.czm.xcricheditor.util;
+package com.czm.xcricheditor.view;
 
 import android.content.Context;
 import android.graphics.drawable.Animatable;
@@ -6,7 +6,8 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-
+import com.czm.xcricheditor.listener.ImageDisplayer;
+import com.czm.xcricheditor.listener.OnImageChangeListener;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.backends.pipeline.PipelineDraweeControllerBuilder;
 import com.facebook.drawee.controller.BaseControllerListener;
@@ -21,13 +22,13 @@ import com.facebook.imagepipeline.request.Postprocessor;
 
 import java.lang.ref.WeakReference;
 
-public class ImageDraweeView extends SimpleDraweeView implements ImageDisplayer{
+public class ImageDraweeView extends SimpleDraweeView implements ImageDisplayer {
 
     private Uri uri;
     private boolean webpEnabled = false;
     private int state = -1;
     private WeakReference<OnImageChangeListener> onImageChangeListenerWeakReference;
-    private ImageDisplayer.OnImageChangeListener onImageChangeListenerStrongReference;
+    private OnImageChangeListener onImageChangeListenerStrongReference;
     private ControllerListener<ImageInfo> controllerListener = new BaseControllerListener<ImageInfo>() {
         @Override
         public void onFinalImageSet(

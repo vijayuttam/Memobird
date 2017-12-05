@@ -1,4 +1,4 @@
-package com.czm.xcricheditor.util;
+package com.czm.xcricheditor.listener;
 
 import android.net.Uri;
 
@@ -6,6 +6,7 @@ import com.facebook.imagepipeline.image.ImageInfo;
 
 
 public interface ImageDisplayer {
+
     Uri getUri();
 
     void setUri(Uri uri);
@@ -16,11 +17,4 @@ public interface ImageDisplayer {
 
     void setOnImageChangeListener(OnImageChangeListener onImageChangeListener);
 
-    interface OnImageChangeListener {
-        void onImageLoading(int percent);
-
-        void onImageLoaded(ImageInfo imageInfo);
-
-        void onImageLoadError();
-    }
 }

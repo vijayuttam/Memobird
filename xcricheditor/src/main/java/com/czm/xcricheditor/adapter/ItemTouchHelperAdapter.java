@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.czm.xcricheditor.helper;
+package com.czm.xcricheditor.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;

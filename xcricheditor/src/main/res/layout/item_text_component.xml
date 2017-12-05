@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<EditText xmlns:android="http://schemas.android.com/apk/res/android"
+<com.czm.xcricheditor.editor.NoteEditText
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/id_item_text_component"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -12,4 +13,4 @@
     android:textCursorDrawable="@drawable/shape_edittext_cursor"
     android:textSize="16sp">
 
-</EditText>
+</com.czm.xcricheditor.editor.NoteEditText>

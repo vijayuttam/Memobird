@@ -1,4 +1,4 @@
-package com.czm.xcricheditor
+package com.czm.xcricheditor.editor
 
 import android.net.Uri
 import android.os.Parcel

@@ -20,6 +20,7 @@ import android.graphics.Canvas;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import com.czm.xcricheditor.adapter.ItemTouchHelperAdapter;
 
 /**
  * An implementation of {@link ItemTouchHelper.Callback} that enables basic drag & drop and
@@ -96,6 +97,7 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+        super.onSelectedChanged(viewHolder, actionState);
         // We only want the active item to change
         if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
             if (viewHolder instanceof ItemTouchHelperViewHolder) {
@@ -104,8 +106,6 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
                 itemViewHolder.onItemSelected();
             }
         }
-
-        super.onSelectedChanged(viewHolder, actionState);
     }
 
     @Override

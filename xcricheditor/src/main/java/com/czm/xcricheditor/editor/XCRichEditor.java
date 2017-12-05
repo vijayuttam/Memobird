@@ -1,4 +1,4 @@
-package com.czm.xcricheditor;
+package com.czm.xcricheditor.editor;
 
 import android.content.Context;
 import android.net.Uri;
@@ -12,8 +12,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import com.czm.xcricheditor.R;
+import com.czm.xcricheditor.adapter.XCRichEditorAdapter;
 import com.czm.xcricheditor.helper.OnStartDragListener;
 import com.czm.xcricheditor.helper.SimpleItemTouchHelperCallback;
+import com.czm.xcricheditor.listener.ComponentAdapterListener;
 import com.czm.xcricheditor.util.PhoneUtil;
 import java.io.File;
 import java.util.ArrayList;
@@ -32,7 +35,6 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener{
     private ItemTouchHelper mItemTouchHelper;
     private int lastPosition = -1;
     private EditText lastEditText;
-
     public XCRichEditor(Context context) {
         this(context, null);
     }
@@ -56,9 +58,9 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener{
         mItemTouchHelper = new ItemTouchHelper(callback);
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
 
-        mAdapter.setComponentAdapterListener(new XCRichEditorAdapter.ComponentAdapterListener() {
+        mAdapter.setComponentAdapterListener(new ComponentAdapterListener() {
             @Override
-            public void change(int position, EditText editText) {
+            public void change(int position, NoteEditText editText) {
                 lastEditText = editText;
                 lastPosition = position;
             }
@@ -86,7 +88,6 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener{
                     mDatas.add(position - 1, textData);
                     mAdapter.notifyDataSetChanged();
                 }
-                Log.e("XRRichEditor","rich text="+getRichText());
             }
         });
         mRecyclerView.setLayoutManager(mFullyLinearLayoutManager);
@@ -119,7 +120,7 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener{
         addData(info);
     }
     public void addImage(EditItem item){
-        List<EditItem> datas = new ArrayList<EditItem>();
+        List<EditItem> datas = new ArrayList<>();
         datas.add(item);
         addData(datas);
     }
@@ -128,37 +129,42 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener{
         if (mDatas != null && mDatas.size() > 0) {
             mDatas.clear();
         }
-        if (content == null)
+        if (content == null) {
             content = "";
+            EditItem textItem = new EditItem(0, content, null);
+            mDatas.add(textItem);
+        } else {
+            textImageEditor(content);
+        }
 
+        mAdapter.setData(mDatas);
+    }
+
+    private void textImageEditor(String content) {
         Pattern pattern = Pattern.compile(PATTERN);
         Matcher matcher = pattern.matcher(content);
-        while (matcher.find()) {
+        if (matcher.find()) {
             String url = matcher.group();
-            StringBuffer sb = new StringBuffer();
-            matcher.appendReplacement(sb, "");
-            EditItem item = new EditItem(0, sb.toString().trim(), null);
-            item.setType(0);
-            item.setContent(sb.toString().trim());
-            mDatas.add(item);
+            StringBuffer headBuffer = new StringBuffer();
+            matcher.appendReplacement(headBuffer, "");
+            EditItem topItem = new EditItem(0, headBuffer.toString().trim(), null);
+            mDatas.add(topItem);
             if (url.contains("<img")) {
                 final String path = url.substring(10, url.length() - 3);
                 EditItem imgItem = new EditItem(1, path, Uri.fromFile(new File(path)));
-                //imgItem.setType(1);
-                //imgItem.setUri(Uri.parse("file://" + path));
-                //imgItem.setContent(path);
                 mDatas.add(imgItem);
             }
-            return;
+            StringBuffer tailBuffer = new StringBuffer();
+            matcher.appendTail(tailBuffer);
+            if (tailBuffer.toString().length() > 1) {
+                textImageEditor(tailBuffer.toString());
+            }
+        } else {
+            EditItem textItem = new EditItem(0, content, null);
+            mDatas.add(textItem);
         }
-        StringBuffer sb = new StringBuffer(content);
-        //matcher.appendTail(sb);
-        EditItem textItem = new EditItem(0, sb.toString().trim(), null);
-        //textItem.setType(0);
-        //textItem.setContent(sb.toString().trim());
-        mDatas.add(textItem);
-        mAdapter.setData(mDatas);
     }
+
     private void addData(List<EditItem> info) {
         if (lastPosition >= 0 && null != lastEditText && !TextUtils.isEmpty(lastEditText.getText().toString().trim())) {
             String lastEditStr = lastEditText.getText().toString();
