@@ -1,6 +1,6 @@
 package com.czm.xcricheditor.listener;
 
-import com.czm.xcricheditor.editor.NoteEditText;
+import android.widget.EditText;
 
 /**
  * Created by deejan on 12/4/17.
@@ -8,7 +8,7 @@ import com.czm.xcricheditor.editor.NoteEditText;
 
 public interface ComponentAdapterListener {
 
-  void change(int position, NoteEditText editText);
+  void change(int position, EditText editText);
 
   void delete(int position);
 

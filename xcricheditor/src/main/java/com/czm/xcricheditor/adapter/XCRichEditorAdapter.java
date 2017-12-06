@@ -5,28 +5,28 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import com.czm.xcricheditor.editor.EditItem;
 import com.czm.xcricheditor.R;
-import com.czm.xcricheditor.editor.NoteEditText;
 import com.czm.xcricheditor.helper.ItemTouchHelperViewHolder;
 import com.czm.xcricheditor.helper.OnStartDragListener;
 import com.czm.xcricheditor.listener.ComponentAdapterListener;
-import com.czm.xcricheditor.listener.OnTextViewChangeListener;
 import com.czm.xcricheditor.view.ImageDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static android.view.View.*;
 
@@ -138,16 +138,20 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
 
-    public class TextViewHolder extends RecyclerView.ViewHolder implements OnTextViewChangeListener {
+    public class TextViewHolder extends RecyclerView.ViewHolder {
 
-        private NoteEditText text;
+        private EditText editText;
+        private OnKeyListener mKeyListener;
+        private OnFocusChangeListener mFocusChangeListener;
+        private SparseArray<String> mTextArray;
 
         public TextViewHolder(View itemView) {
             super(itemView);
-            text = (NoteEditText) itemView.findViewById(R.id.id_item_text_component);
-            text.setOnTextViewChangeListener(this);
-            text.setIndex(getAdapterPosition());
-            text.addTextChangedListener(new TextWatcher() {
+            editText = (EditText) itemView.findViewById(R.id.id_item_text_component);
+            editText.setOnKeyListener(mKeyListener);
+            editText.setOnFocusChangeListener(mFocusChangeListener);
+            mTextArray = new SparseArray<>();
+            editText.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -160,35 +164,57 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    String content = text.getText().toString().trim();
+                    String content = editText.getText().toString().trim();
                     mData.get(getAdapterPosition()).setContent(content);
+                    /*
+                    Matcher matcher = Pattern.compile("\n").matcher(content);
+                    while (matcher.find()) {
+                        mTextArray.append(content.indexOf("\n"), matcher.group(1));
+                        content = content.replaceFirst("\n", "");
+                    }
+                    if (mTextArray.size() == 0){
+                        mData.get(getAdapterPosition()).setContent(content);
+                    } else {
+                        for (int i = 0; i < mTextArray.size(); i++) {
+                            mData.get(getAdapterPosition() + i).setContent(mTextArray.get(i));
+                        }
+                    }
+                    */
                 }
             });
+
+            mKeyListener = new OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+                        EditText editText = (EditText) v;
+                        //onBackspacePress(editText);
+                    }
+                    if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+
+                    }
+                    return false;
+                }
+            };
+
+            mFocusChangeListener = new OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        //mLastFocusEdit = (EditText) v;
+                    }
+                }
+            };
         }
 
         public void bindData(String content) {
-            text.setText(content);
+            editText.setText(content);
             int pos = getAdapterPosition();
-            if(pos == 0 && text.length() <= 0){
-                text.setHint("\n" + "Please enter the content");
+            if(pos == 0 && editText.length() <= 0){
+                editText.setHint("\n" + "Please enter the content");
             }else{
-                text.setHint("");
+                editText.setHint("");
             }
-        }
-
-        @Override public void onEditTextDelete(int index, String text) {
-            mListener.delete(getAdapterPosition());
-        }
-
-        @Override public void onEditTextEnter(int index, String input) {
-            mData.get(index).setContent(input);
-        }
-
-        @Override public void onTextChange(int index, boolean hasText) {
-            if (hasText) {
-                mListener.change(getAdapterPosition(), text);
-            }
-
         }
     }
 
