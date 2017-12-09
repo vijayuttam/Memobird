@@ -5,7 +5,9 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import com.czm.xcricheditor.editor.EditItem;
 import com.czm.xcricheditor.R;
 import com.czm.xcricheditor.helper.ItemTouchHelperViewHolder;
@@ -32,12 +35,14 @@ import static android.view.View.*;
 
 public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements
     ItemTouchHelperAdapter {
-    private final LayoutInflater mLayoutInflater;
+
     private List<EditItem> mData;
     private Context mContext;
-    private ComponentAdapterListener mListener;
     private int mImageheight;
-    private final OnStartDragListener mDragStartListener;
+    private ComponentAdapterListener mListener;
+    private LayoutInflater mLayoutInflater;
+    private OnStartDragListener mDragStartListener;
+
 
     public XCRichEditorAdapter(Context context, OnStartDragListener dragStartListener) {
         super();
@@ -140,21 +145,15 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public class TextViewHolder extends RecyclerView.ViewHolder {
 
-        private EditText editText;
-        private OnKeyListener mKeyListener;
-        private OnFocusChangeListener mFocusChangeListener;
-        private SparseArray<String> mTextArray;
+        public EditText editText;
 
-        public TextViewHolder(View itemView) {
+        public TextViewHolder(final View itemView) {
             super(itemView);
             editText = (EditText) itemView.findViewById(R.id.id_item_text_component);
-            editText.setOnKeyListener(mKeyListener);
-            editText.setOnFocusChangeListener(mFocusChangeListener);
-            mTextArray = new SparseArray<>();
+            editText.requestFocus();
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
                 }
 
                 @Override
@@ -162,56 +161,45 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
                 }
 
-                @Override
-                public void afterTextChanged(Editable s) {
-                    String content = editText.getText().toString().trim();
-                    mData.get(getAdapterPosition()).setContent(content);
+                @Override public void afterTextChanged(Editable s) {
+                    mData.get(getAdapterPosition()).setContent(s.toString());
                     /*
-                    Matcher matcher = Pattern.compile("\n").matcher(content);
-                    while (matcher.find()) {
-                        mTextArray.append(content.indexOf("\n"), matcher.group(1));
-                        content = content.replaceFirst("\n", "");
-                    }
-                    if (mTextArray.size() == 0){
-                        mData.get(getAdapterPosition()).setContent(content);
-                    } else {
-                        for (int i = 0; i < mTextArray.size(); i++) {
-                            mData.get(getAdapterPosition() + i).setContent(mTextArray.get(i));
+                    int tmpPosition = getAdapterPosition();
+                    String lastEditStr = editText.getText().toString();
+                    int cursorIndex = editText.getSelectionStart();
+                    String editStr1 = lastEditStr.substring(0, cursorIndex).trim();
+                    String editStr2 = lastEditStr.substring(cursorIndex).trim();
+                    if (lastEditStr.length() < 50 || lastEditStr.contains("\n")) {
+                        mData.get(tmpPosition).setContent(editStr1);
+                        if (!TextUtils.isEmpty(editStr2)) {
+                            EditItem postData = new EditItem(0, editStr2, null);
+                            mData.add(tmpPosition++, postData);
+                        } else {
+                            EditItem postData = new EditItem(0, "", null);
+                            mData.add(tmpPosition++, postData);
                         }
-                    }
-                    */
+                    }*/
                 }
             });
 
-            mKeyListener = new OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
-                        EditText editText = (EditText) v;
-                        //onBackspacePress(editText);
-                    }
-                    if (event.getAction() == KeyEvent.ACTION_DOWN && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+            editText.setOnFocusChangeListener(new OnFocusChangeListener() {
+                @Override public void onFocusChange(View v, boolean hasFocus) {
+                    mListener.change(getAdapterPosition(), editText);
+                }
+            });
 
-                    }
+            editText.setOnKeyListener(new OnKeyListener() {
+                @Override public boolean onKey(View v, int keyCode, KeyEvent event) {
                     return false;
                 }
-            };
-
-            mFocusChangeListener = new OnFocusChangeListener() {
-                @Override
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (hasFocus) {
-                        //mLastFocusEdit = (EditText) v;
-                    }
-                }
-            };
+            });
         }
 
         public void bindData(String content) {
             editText.setText(content);
             int pos = getAdapterPosition();
             if(pos == 0 && editText.length() <= 0){
-                editText.setHint("\n" + "Please enter the content");
+                editText.setHint("Please enter the content");
             }else{
                 editText.setHint("");
             }

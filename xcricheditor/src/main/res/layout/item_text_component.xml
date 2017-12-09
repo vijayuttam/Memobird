@@ -10,7 +10,7 @@
     android:cursorVisible="true"
     android:textColor="#333333"
     android:textColorHint="#Ababab"
-    android:lineSpacingExtra="6dp"
+    android:lineSpacingExtra="3dp"
     android:textCursorDrawable="@drawable/shape_edittext_cursor"
     android:textSize="16sp">
 

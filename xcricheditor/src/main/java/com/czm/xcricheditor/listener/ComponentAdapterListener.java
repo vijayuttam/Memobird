@@ -10,6 +10,8 @@ public interface ComponentAdapterListener {
 
   void change(int position, EditText editText);
 
+  void enter(int position, String text);
+
   void delete(int position);
 
 }

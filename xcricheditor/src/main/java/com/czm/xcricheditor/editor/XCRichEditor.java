@@ -11,6 +11,7 @@ import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import com.czm.xcricheditor.R;
 import com.czm.xcricheditor.adapter.XCRichEditorAdapter;
@@ -31,10 +32,10 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
     private Context mContext;
     private List<EditItem> mDatas;
     private RecyclerView mRecyclerView;
-    private LinearLayoutManager mFullyLinearLayoutManager;
+    private LinearLayoutManager mLayoutManager;
     private XCRichEditorAdapter mAdapter;
     private ItemTouchHelper mItemTouchHelper;
-    private int lastPosition = -1;
+    private int lastPosition = 0;
     private EditText lastEditText;
     private SparseArray<String> mImageArray;
 
@@ -56,7 +57,8 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
         mRecyclerView = (RecyclerView) mRoot.findViewById(R.id.id_edit_component);
         mRecyclerView.addItemDecoration(new SpaceItemDecoration(PhoneUtil.dip2px(mContext,10)));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mFullyLinearLayoutManager = new LinearLayoutManager(mContext);
+        mRecyclerView.setHasFixedSize(false);
+        mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
         mAdapter = new XCRichEditorAdapter(mContext, this);
         ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
         mItemTouchHelper = new ItemTouchHelper(callback);
@@ -69,9 +71,13 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
                 lastPosition = position;
             }
 
+            @Override public void enter(int position, String remain) {
+
+            }
+
             @Override
             public void delete(int position) {
-                if(position == mAdapter.getItemCount()-1){
+                if(position == mAdapter.getItemCount() - 1){
                     //the last one
                     mDatas.remove(position);
                     mAdapter.notifyDataSetChanged();
@@ -87,22 +93,20 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
                     mDatas.remove(position);
                     mDatas.remove(position - 1);
                     EditItem textData = new EditItem(0, str, null);
-                    //textData.setType(0);
-                    //textData.setContent(str);
                     mDatas.add(position - 1, textData);
                     mAdapter.notifyDataSetChanged();
                 }
             }
         });
 
-        mRecyclerView.setLayoutManager(mFullyLinearLayoutManager);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
 
         if (null == mDatas)
             mDatas = new ArrayList<>();
 
         EditItem data = new EditItem(0, "", null);
-        mDatas.add(data);
+        mDatas.add(lastPosition, data);
         mAdapter.setData(mDatas);
     }
 
@@ -122,7 +126,7 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
         return content;
     }
 
-    public void addImage(List<EditItem> info) {
+    public void addImages(List<EditItem> info) {
         addData(info);
     }
 
@@ -168,27 +172,21 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
                     s = mContent.substring(0, mImageArray.keyAt(i));
                     EditItem textItem = new EditItem(0, s, null);
                     mDatas.add(textItem);
-                    //appendImageView(mImageArray.valueAt(i));
                     EditItem imgItem = new EditItem(1, mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
                     mDatas.add(imgItem);
                 } else if (i == mImageArray.size() - 1) {
                     s = mContent.substring(mImageArray.keyAt(i - 1), mImageArray.keyAt(i));
-                    //appendTextView(s);
                     EditItem textItem1 = new EditItem(0, s, null);
                     mDatas.add(textItem1);
                     s = mContent.substring(mImageArray.keyAt(i), mContent.length());
-                    //appendImageView(mImageArray.valueAt(i));
                     EditItem imgItem = new EditItem(1, mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
                     mDatas.add(imgItem);
-                    //appendTextView(s);
                     EditItem textItem2 = new EditItem(0, s, null);
                     mDatas.add(textItem2);
                 } else {
                     s = mContent.substring(mImageArray.keyAt(i - 1), mImageArray.keyAt(i));
-                    //appendTextView(s);
                     EditItem textItem = new EditItem(0, s, null);
                     mDatas.add(textItem);
-                    //appendImageView(mImageArray.valueAt(i));
                     EditItem imgItem = new EditItem(1, mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
                     mDatas.add(imgItem);
                 }
@@ -232,20 +230,14 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
                 mDatas.remove(lastPosition);
             }
             EditItem preData = new EditItem(0, editStr1, null);
-            //preData.setType(0);
-            //preData.setContent(editStr1);
             mDatas.add(tmpPosition++, preData);
             for (int i = 0; i < info.size(); i++) {
                 mDatas.add(tmpPosition++, info.get(i));
                 if (i == info.size() - 1 && !TextUtils.isEmpty(editStr2)) {
                     EditItem postData = new EditItem(0, editStr2, null);
-                    //postData.setType(0);
-                    //postData.setContent(editStr2);
                     mDatas.add(tmpPosition++, postData);
                 } else {
                     EditItem postData = new EditItem(0, "", null);
-                    //postData.setType(0);
-                    //postData.setContent("");
                     mDatas.add(tmpPosition++, postData);
                 }
             }
@@ -253,14 +245,10 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
             for (int i = 0; i < info.size(); i++) {
                 mDatas.add(info.get(i));
                 EditItem textData = new EditItem(0, "", null);
-                //textData.setType(0);
-                //textData.setContent("");
                 mDatas.add(textData);
             }
         }
         mAdapter.setData(mDatas);
-
-        // Log.e("XCRichEditor","rich text="+getRichText());
 
     }
 
