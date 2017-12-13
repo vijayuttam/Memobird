@@ -1,11 +1,8 @@
 package com.czm.xcricheditor.editor;
 
 import android.animation.LayoutTransition;
-import android.annotation.SuppressLint;
 import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.AttributeSet;
@@ -23,9 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import com.czm.xcricheditor.R;
-import com.czm.xcricheditor.event.MyDragListener;
-import com.czm.xcricheditor.event.MyTouchListener;
-import com.czm.xcricheditor.util.PhoneUtil;
 import com.czm.xcricheditor.view.ImageDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
@@ -36,17 +30,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SmartEditor extends ScrollView {
+import static com.czm.xcricheditor.util.EditorUtilsKt.IMAGE_SRC_REGEX;
+import static com.czm.xcricheditor.util.EditorUtilsKt.dip2px;
 
-  private String IMAGE_SRC_REGEX = "<img[^<>]*?\\ssrc=['\"]?(.*?)['\"].*?>";
-  private static final int EDIT_PADDING = 10;
+public class SmartEditor extends ScrollView implements View.OnDragListener {
+
   private static final int EDIT_FIRST_PADDING_TOP = 1;
-
+  private int mImageheight = 0;
   private int disappearingImageIndex = 0;
   private int editNormalPadding = 0;
   private int viewTagIndex = 1;
   private SparseArray<String> mImageArray;
-
+  private String TAG = getClass().getSimpleName();
   private OnKeyListener mKeyListener;
   private OnClickListener mCloseBtnListener;
   private OnFocusChangeListener mFocusChangeListener;
@@ -116,26 +111,22 @@ public class SmartEditor extends ScrollView {
 
     mOnLongClickListener = new OnLongClickListener() {
       @Override public boolean onLongClick(View v) {
-        ClipData.Item item = new ClipData.Item((CharSequence) v.getTag());
-        String[] mimeTypes = { ClipDescription.MIMETYPE_TEXT_PLAIN};
-
-        ClipData clipData = new ClipData(v.getTag().toString(),mimeTypes, item);
-        View.DragShadowBuilder myShadow = new View.DragShadowBuilder(v.findViewById(R.id.id_item_image_component));
-
-        v.startDrag(clipData, myShadow, null, 0);
-        return true;
+        ClipData clip = ClipData.newPlainText("", "");
+        View.DragShadowBuilder shadow = new View.DragShadowBuilder(v);
+        v.startDrag(clip,shadow, v,0);
+        return false;
       }
     };
 
     LinearLayout.LayoutParams firstEditParam = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-    editNormalPadding = PhoneUtil.dip2px(mContext, EDIT_PADDING);
-    EditText firstEdit = createEditText("Please enter the content", PhoneUtil.dip2px(mContext, EDIT_FIRST_PADDING_TOP));
+    editNormalPadding = dip2px(mContext, 0);
+    EditText firstEdit = createEditText("Please enter the content", dip2px(mContext, EDIT_FIRST_PADDING_TOP));
     mContainerLayout.addView(firstEdit, firstEditParam);
     mLastFocusEdit = firstEdit;
   }
 
   private EditText createEditText(String hint, int paddingTop) {
-    EditText editText = (EditText) mInflater.inflate(R.layout.item_text_component, null);
+    EditText editText = (EditText) mInflater.inflate(R.layout.item_edit_component, null);
     editText.setOnKeyListener(mKeyListener);
     editText.setTag(viewTagIndex++);
     editText.setPadding(editNormalPadding, paddingTop, editNormalPadding, 0);
@@ -211,23 +202,23 @@ public class SmartEditor extends ScrollView {
         if (i == 0 && (mImageArray.size() - 1 == 0)) {
           s = mContent.substring(0, mImageArray.keyAt(i));
           addEditTextAtIndex(i, s);
-          insertImage( mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
+          addImageViewAtIndex(i, mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
           s = mContent.substring(mImageArray.keyAt(i), mContent.length());
           addEditTextAtIndex(i, s);
         } else if (i == 0) {
           s = mContent.substring(0, mImageArray.keyAt(i));
           addEditTextAtIndex(i, s);
-          insertImage( mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
+          addImageViewAtIndex(i, mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
         } else if (i == mImageArray.size() - 1) {
           s = mContent.substring(mImageArray.keyAt(i - 1), mImageArray.keyAt(i));
           addEditTextAtIndex(i, s);
           s = mContent.substring(mImageArray.keyAt(i), mContent.length());
-          insertImage( mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
+          addImageViewAtIndex(i, mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
           addEditTextAtIndex(i, s);
         } else {
           s = mContent.substring(mImageArray.keyAt(i - 1), mImageArray.keyAt(i));
           addEditTextAtIndex(i, s);
-          insertImage( mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
+          addImageViewAtIndex(i, mImageArray.valueAt(i), Uri.fromFile(new File(mImageArray.valueAt(i))));
         }
       }
     }
@@ -280,7 +271,7 @@ public class SmartEditor extends ScrollView {
   }
 
 
-  public void insertImage(String imagePath, Uri uri) {
+  public void addImage(String imagePath, Uri uri) {
     String lastEditStr = mLastFocusEdit.getText().toString();
     int cursorIndex = mLastFocusEdit.getSelectionStart();
     String editStr1 = lastEditStr.substring(0, cursorIndex).trim();
@@ -307,17 +298,18 @@ public class SmartEditor extends ScrollView {
     final RelativeLayout layout = (RelativeLayout) mInflater.inflate(R.layout.item_image_component, null);
     layout.setTag(viewTagIndex++);
     final Button closeView = (Button)layout.findViewById(R.id.delete_btn);
-    closeView.setOnClickListener(mCloseBtnListener);
     ImageDraweeView img = (ImageDraweeView)layout.findViewById(R.id.id_item_image_component);
     img.setTag(imagePath);
-    img.setOnLongClickListener(mOnLongClickListener);
+    closeView.setOnClickListener(mCloseBtnListener);
+    layout.setOnLongClickListener(mOnLongClickListener);
     ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(uri)
         .setResizeOptions(new ResizeOptions(210, 210))
-        .setAutoRotateEnabled(true)
+        .setAutoRotateEnabled(false)
         .build();
     img.setUri(imageRequest);
+    layout.setOnDragListener(this);
 
-    //mImageheight = img.getMeasuredHeight();
+    mImageheight = img.getMeasuredHeight();
 
     mContainerLayout.postDelayed(new Runnable() {
       @Override
@@ -327,42 +319,6 @@ public class SmartEditor extends ScrollView {
       }
     }, 200);
 
-    img.setOnDragListener(new View.OnDragListener() {
-      android.widget.RelativeLayout.LayoutParams layoutParams;
-      @Override
-      public boolean onDrag(View v, DragEvent event) {
-        switch (event.getAction()) {
-          case DragEvent.ACTION_DRAG_STARTED:
-            layoutParams = (RelativeLayout.LayoutParams) v.getLayoutParams();
-            break;
-
-          case DragEvent.ACTION_DRAG_ENTERED:
-            int x_cord = (int) event.getX();
-            int y_cord = (int) event.getY();
-
-            break;
-
-          case DragEvent.ACTION_DRAG_EXITED:
-            x_cord = (int) event.getX();
-            y_cord = (int) event.getY();
-            layoutParams.leftMargin = x_cord;
-            layoutParams.rightMargin = y_cord;
-            v.setLayoutParams(layoutParams);
-            insertImage(v.getTag().toString(), Uri.fromFile(new File(v.getTag().toString())));
-            mContainerLayout.removeView(v);
-            break;
-
-          case DragEvent.ACTION_DRAG_LOCATION:
-            x_cord = (int) event.getX();
-            y_cord = (int) event.getY();
-            break;
-
-          default:
-            break;
-        }
-        return true;
-      }
-    });
   }
 
   private void onImageCloseClick(View view) {
@@ -403,4 +359,60 @@ public class SmartEditor extends ScrollView {
     }
   }
 
+  @Override public boolean onDrag(View v, DragEvent event) {
+    // Defines a variable to store the action type for the incoming
+    // event
+    float X,Y;
+    final int action = event.getAction();
+    // Handles each of the expected events
+    switch (action) {
+      case DragEvent.ACTION_DRAG_STARTED:
+        // Invalidate the view to force a redraw in the new tint
+        v.invalidate();
+        // returns true to indicate that the View can accept the
+        // dragged data.
+        return true;
+      case DragEvent.ACTION_DRAG_ENTERED:
+        // Invalidate the view to force a redraw in the new tint
+        v.invalidate();
+        return false;
+      case DragEvent.ACTION_DRAG_LOCATION:
+        X = event.getX();
+        Y = event.getY();
+        //if(X>widthlayout && Y>heightlayout){
+        //  temp = true;
+        //}
+        // Ignore the event
+        return false;
+      case DragEvent.ACTION_DRAG_EXITED:
+        //v.invalidate();
+        return false;
+      case DragEvent.ACTION_DROP:
+        // Gets the item containing the dragged data
+        ClipData dragData = event.getClipData();
+        // Gets the text data from the item.
+        final String tag = dragData.getItemAt(0).getText().toString();
+        View view = (View) event.getLocalState();
+        ViewGroup viewgroup = (ViewGroup) view.getParent();
+        viewgroup.removeView(view);
+        mContainerLayout.removeView(v);
+        X = event.getX();
+        Y = event.getY();
+        view.setX(X-(view.getWidth() / 2));
+        view.setY(Y-(view.getHeight() / 2));
+        mContainerLayout = (LinearLayout) v;
+        mContainerLayout.addView(view);
+        view.setVisibility(View.VISIBLE);
+        // Invalidates the view to force a redraw
+        v.invalidate();
+        // Returns true. DragEvent.getResult() will return true.
+        return true;
+      case DragEvent.ACTION_DRAG_ENDED:
+        v.invalidate();
+        return false;
+      default:
+        break;
+    }
+    return false;
+  }
 }

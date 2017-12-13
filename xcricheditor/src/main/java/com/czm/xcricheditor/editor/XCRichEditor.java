@@ -11,23 +11,22 @@ import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import com.czm.xcricheditor.R;
 import com.czm.xcricheditor.adapter.XCRichEditorAdapter;
 import com.czm.xcricheditor.helper.OnStartDragListener;
 import com.czm.xcricheditor.helper.SimpleItemTouchHelperCallback;
 import com.czm.xcricheditor.listener.ComponentAdapterListener;
-import com.czm.xcricheditor.util.PhoneUtil;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.czm.xcricheditor.util.EditorUtilsKt.IMAGE_SRC_REGEX;
+import static com.czm.xcricheditor.util.EditorUtilsKt.px2dip;
 
 public class XCRichEditor extends RelativeLayout implements OnStartDragListener {
 
-    private String IMAGE_SRC_REGEX = "<img[^<>]*?\\ssrc=['\"]?(.*?)['\"].*?>";
     private View mRoot;
     private Context mContext;
     private List<EditItem> mDatas;
@@ -55,7 +54,7 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
         mImageArray = new SparseArray<>();
         mRoot = View.inflate(mContext, R.layout.layout_rich_editor, this);
         mRecyclerView = (RecyclerView) mRoot.findViewById(R.id.id_edit_component);
-        mRecyclerView.addItemDecoration(new SpaceItemDecoration(PhoneUtil.dip2px(mContext,10)));
+        mRecyclerView.addItemDecoration(new SpaceItemDecoration(px2dip(mContext, 10)));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(false);
         mLayoutManager = new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false);
@@ -67,12 +66,34 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
         mAdapter.setComponentAdapterListener(new ComponentAdapterListener() {
             @Override
             public void change(int position, EditText editText) {
-                lastEditText = editText;
-                lastPosition = position;
+               lastEditText = editText;
+               lastPosition = position;
             }
 
-            @Override public void enter(int position, String remain) {
-
+            @Override public void enter(int position, EditText editText) {
+                lastEditText = editText;
+                lastPosition = position;
+                if (lastPosition >= 0 && null != lastEditText && !TextUtils.isEmpty(lastEditText.getText().toString().trim())) {
+                    String lastEditStr = lastEditText.getText().toString();
+                    int cursorIndex = lastEditText.getSelectionStart();
+                    String editStr1 = lastEditStr.substring(0, cursorIndex).trim();
+                    String editStr2 = lastEditStr.substring(cursorIndex).trim();
+                    mDatas.get(lastPosition).setContent(editStr1);
+                    //if (mDatas.size() < 0) {
+                    //    for (int i=0; i < mDatas.size(); i++) {
+                    //        mDatas.get(i).setContent(mDatas.get(i).getContent());
+                    //    }
+                    //}
+                    if (!TextUtils.isEmpty(editStr2)) {
+                        EditItem postData = new EditItem(0, editStr2, null);
+                        mDatas.add(++lastPosition, postData);
+                    } else {
+                        EditItem postData = new EditItem(0, "", null);
+                        mDatas.add(++lastPosition, postData);
+                        mAdapter.notifyItemInserted(lastPosition);
+                    }
+                    mAdapter.modifiedData(mDatas);
+                }
             }
 
             @Override
@@ -205,20 +226,20 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
             String editStr2 = lastEditStr.substring(cursorIndex).trim();
             boolean ispre = false;
             boolean ispost = false;
-            if (lastPosition > 0 && mDatas.get((lastPosition - 1)).getType() == 0) {//pre item is text
+            if (lastPosition > 0 && mDatas.get((lastPosition - 1)).getType() == 0) { //pre item is text
                 editStr1 = mDatas.get((lastPosition - 1)).getContent() + editStr1;
                 ispre = true;
             }
-            if (lastPosition < mDatas.size() - 1 && mDatas.get((lastPosition + 1)).getType() == 0) {//post item is text
+            if (lastPosition < mDatas.size() - 1 && mDatas.get((lastPosition + 1)).getType() == 0) { //post item is text
                 editStr2 = editStr2 + mDatas.get((lastPosition + 1)).getContent();
                 ispost = true;
             }
             int tmpPosition = lastPosition;
             if (ispre && ispost) {
                 mDatas.remove(lastPosition + 1);
-                mDatas.remove(lastPosition);
-                mDatas.remove(lastPosition - 1);
-                --tmpPosition;
+                //mDatas.remove(lastPosition);
+                //mDatas.remove(lastPosition - 1);
+                ++tmpPosition;
             } else if (ispre) {
                 mDatas.remove(lastPosition);
                 mDatas.remove(lastPosition - 1);
@@ -229,8 +250,8 @@ public class XCRichEditor extends RelativeLayout implements OnStartDragListener 
             } else {
                 mDatas.remove(lastPosition);
             }
-            EditItem preData = new EditItem(0, editStr1, null);
-            mDatas.add(tmpPosition++, preData);
+            //EditItem preData = new EditItem(0, editStr1, null);
+            //mDatas.add(tmpPosition++, preData);
             for (int i = 0; i < info.size(); i++) {
                 mDatas.add(tmpPosition++, info.get(i));
                 if (i == info.size() - 1 && !TextUtils.isEmpty(editStr2)) {

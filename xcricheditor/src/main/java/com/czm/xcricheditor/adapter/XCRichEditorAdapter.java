@@ -5,17 +5,15 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import com.czm.xcricheditor.editor.EditItem;
 import com.czm.xcricheditor.R;
 import com.czm.xcricheditor.helper.ItemTouchHelperViewHolder;
@@ -25,11 +23,9 @@ import com.czm.xcricheditor.view.ImageDraweeView;
 import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
-
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.w3c.dom.Text;
 
 import static android.view.View.*;
 
@@ -61,6 +57,10 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         notifyDataSetChanged();
     }
 
+    public void modifiedData(List<EditItem> mData) {
+        this.mData = mData;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         if(viewType == ITEM_TYPE.ITEM_TYPE_IMAGE.ordinal()){
@@ -90,6 +90,7 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
 
+
     @Override
     public int getItemViewType(int position) {
         switch (mData.get(position).getType()) {
@@ -101,6 +102,7 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 return ITEM_TYPE.ITEM_TYPE_TEXT.ordinal();
         }
     }
+
 
     @Override
     public int getItemCount() {
@@ -125,8 +127,8 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 Collections.swap(mData, i, i - 1);
             }
         }
-        notifyDataSetChanged();
         notifyItemMoved(fromPosition, toPosition);
+        notifyDataSetChanged();
         return true;
     }
 
@@ -145,15 +147,17 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public class TextViewHolder extends RecyclerView.ViewHolder {
 
-        public EditText editText;
+        private EditText editText;
 
         public TextViewHolder(final View itemView) {
             super(itemView);
-            editText = (EditText) itemView.findViewById(R.id.id_item_text_component);
+            editText = (EditText) itemView.findViewById(R.id.item_editText);
             editText.requestFocus();
+
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
                 }
 
                 @Override
@@ -162,23 +166,15 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }
 
                 @Override public void afterTextChanged(Editable s) {
-                    mData.get(getAdapterPosition()).setContent(s.toString());
-                    /*
-                    int tmpPosition = getAdapterPosition();
-                    String lastEditStr = editText.getText().toString();
-                    int cursorIndex = editText.getSelectionStart();
-                    String editStr1 = lastEditStr.substring(0, cursorIndex).trim();
-                    String editStr2 = lastEditStr.substring(cursorIndex).trim();
-                    if (lastEditStr.length() < 50 || lastEditStr.contains("\n")) {
-                        mData.get(tmpPosition).setContent(editStr1);
-                        if (!TextUtils.isEmpty(editStr2)) {
-                            EditItem postData = new EditItem(0, editStr2, null);
-                            mData.add(tmpPosition++, postData);
-                        } else {
-                            EditItem postData = new EditItem(0, "", null);
-                            mData.add(tmpPosition++, postData);
-                        }
-                    }*/
+                    String input = editText.getText().toString();
+                    if (input == null) return;
+
+                    String lastInput = input.substring(Math.max(input.length() - 1,  0));
+                    if (lastInput.equals("\n")) {
+                        mListener.enter(getAdapterPosition(), editText);
+                    } else if (input.length() > 45) {
+                        mListener.enter(getAdapterPosition(), editText);
+                    }
                 }
             });
 
@@ -190,6 +186,13 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             editText.setOnKeyListener(new OnKeyListener() {
                 @Override public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    switch (event.getAction()) {
+                        case KeyEvent.ACTION_DOWN :
+                            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                                mListener.enter(getAdapterPosition(), editText);
+                                return true;
+                            }
+                    }
                     return false;
                 }
             });
@@ -244,6 +247,16 @@ public class XCRichEditorAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             img.getLayoutParams().height = mImageheight;
             img.setBackgroundColor(0);
         }
+    }
+
+    private void showSoftKeybord(EditText mEditText) {
+        InputMethodManager imm = (InputMethodManager)mContext. getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(mEditText, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    private void hideSoftKeyboard(EditText mEditText) {
+        InputMethodManager imm = (InputMethodManager)mContext. getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
     }
 
 }

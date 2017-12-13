@@ -12,6 +12,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.arellomobile.mvp.MvpAppCompatActivity
 import com.arellomobile.mvp.presenter.InjectPresenter
 import com.czm.xcricheditor.editor.EditItem
+import com.czm.xcricheditor.editor.SmartEditor
 import com.czm.xcricheditor.editor.XCRichEditor
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.intretech.library.bean.PickResult
@@ -116,6 +117,7 @@ class NoteActivity : MvpAppCompatActivity(), NoteView, IPickResult {
             var editItem: EditItem? = EditItem(
                     1, pickResult!!.path, Uri.fromFile(File(pickResult!!.path)))
             etText!!.addImage(editItem)
+
             Toast.makeText(this, "Picked Image", Toast.LENGTH_LONG).show()
         }else{
             Toast.makeText(this, pickResult.error.message, Toast.LENGTH_LONG).show()

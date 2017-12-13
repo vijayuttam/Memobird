@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="textColorHint">#Ababab</color>
+  <color name="textColor">#333333</color>
+  <color name="background">#00000000</color>
+</resources>
